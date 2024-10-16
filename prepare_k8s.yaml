@@ -1,0 +1,158 @@
+---
+- name: K8s kurulumu
+  hosts: vms
+  gather_facts: no
+  become: yes
+  tasks:
+    
+    - name: DNF update
+      dnf:
+        name: '*'
+        state: latest
+
+    - name: Disable SELinux
+      selinux:
+        state: disabled
+
+#    - name: selinux setenforce command
+#      command: setenforce 0
+
+    - name: Ensure swap entries are removed from /etc/fstab
+      lineinfile:
+        path: /etc/fstab
+        regexp: '^.*swap.*$'
+        state: absent
+
+    - name: swapoff command
+      command: swapoff -a
+
+    - name: Stop and Disable Firewalld
+      service:
+        name: firewalld
+        state: stopped
+        enabled: no
+
+    - name: netfilter and overlay network
+      shell: |
+        sudo cat << EOF | sudo tee /etc/modules-load.d/containerd.conf
+        overlay
+        br_netfilter
+        EOF
+    - name: iptables
+      shell: |
+        sudo cat << EOF | sudo tee /etc/sysctl.d/99-kubernetes-cri.conf
+        net.ipv4.ip_forward = 1
+        net.bridge.bridge-nf-call-iptables = 1
+        net.bridge.bridge-nf-call-ip6tables = 1
+        EOF
+    - name: Load overlay kernel module
+      command: sudo modprobe overlay
+
+    - name: Load br_netfilter kernel module
+      command: sudo modprobe br_netfilter
+    
+    - name: Load ip_tables kernel module
+      command: sudo modprobe ip_tables
+
+    - name: Apply sysctl settings
+      command: sudo sysctl --system
+    
+    - name: Install dnf-utils
+      dnf:
+        name: dnf-utils
+        state: present
+      become_user: root
+
+# Containerd installation
+
+    - name: containerd repo 
+      command: sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+    
+    - name: Install containerd.io
+      dnf:
+        name: containerd.io
+        state: present
+      become_user: root 
+
+    - name: containerd file edit
+      shell: containerd config default > /etc/containerd/config.toml
+    - name: SystemCgroup editing
+      ansible.builtin.replace:
+        path: /etc/containerd/config.toml  
+        regexp: 'SystemdCgroup = false'
+        replace: 'SystemdCgroup = true'
+    
+    - name: Containerd servisini yeniden başlat
+      ansible.builtin.systemd:
+        name: containerd
+        state: restarted
+    
+    - name: Containerd servisini yeniden başlat
+      ansible.builtin.systemd:
+        name: containerd
+        enabled: true
+- name: iptables master
+  hosts: master
+  become: yes
+  tasks:
+    - name: iptables master
+      shell: |
+        sudo firewall-cmd --permanent --add-port=6443/tcp
+        sudo firewall-cmd --permanent --add-port=2379-2380/tcp
+        sudo firewall-cmd --permanent --add-port=10250/tcp
+        sudo firewall-cmd --permanent --add-port=10251/tcp
+        sudo firewall-cmd --permanent --add-port=10252/tcp
+        sudo firewall-cmd --reload
+        sudo modprobe br_netfilter
+        sudo sh -c "echo '1' > /proc/sys/net/bridge/bridge-nf-call-iptables"
+        sudo sh -c "echo '1' > /proc/sys/net/ipv4/ip_forward"
+
+#- name: iptables worker
+#  hosts: worker
+#  become: yes
+#  tasks:
+#    - name: iptables worker
+#      shell: |
+#	sudo firewall-cmd --permanent --add-port=10250/tcp
+#	sudo firewall-cmd --permanent --add-port=30000-32767/tcp
+#       sudo firewall-cmd --reload
+#	sudo modprobe br_netfilter
+#	sudo sh -c "echo '1' > /proc/sys/net/bridge/bridge-nf-call-iptables"
+#	sudo sh -c "echo '1' > /proc/sys/net/ipv4/ip_forward"
+
+
+- name: kubernetes repo add
+  hosts: vms
+  become: yes
+  tasks:
+    - name: k8s repo add
+      shell: |
+        cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
+        [kubernetes]
+        name=Kubernetes
+        baseurl=https://pkgs.k8s.io/core:/stable:/v1.29/rpm/
+        enabled=1
+        gpgcheck=1
+        gpgkey=https://pkgs.k8s.io/core:/stable:/v1.29/rpm/repodata/repomd.xml.key
+        exclude=kubelet kubeadm kubectl cri-tools kubernetes-cni
+        EOF
+
+    - name: kubeadm install
+      command: sudo dnf install -y kubelet-1.29.6 kubeadm-1.29.6 kubectl-1.29.6 --disableexcludes=kubernetes
+
+    - name: versionlock install
+      command: sudo dnf install yum-plugin-versionlock -y
+
+    - name: versionlock kube*
+      command: sudo dnf versionlock kubelet kubeadm kubectl
+
+    - name: kubelet servisini yeniden başlat
+      ansible.builtin.systemd:
+        name: kubelet.service
+        state: restarted
+
+    - name: kubelet servisini enable 
+      ansible.builtin.systemd:
+        name: kubelet.service
+        enabled: true
+

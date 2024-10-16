@@ -1,0 +1,55 @@
+---
+- name: Create a VM from a template
+  hosts: localhost
+  gather_facts: no
+  vars:
+    ansible_python_interpreter: /usr/bin/python3.6
+  pre_tasks:
+    - include_vars: vars_vm.yaml
+  tasks:
+
+  - name: Create a virtual machine from a template
+    vmware_guest:
+      hostname: "{{ vcenter_hostname }}"
+      username: "{{ vcenter_username }}"
+      password: "{{ vcenter_password }}"
+      validate_certs: False
+      name: "{{item.value.server_hostname}}"
+      folder: /Datacenter/vm
+      state: "{{ item.value.vm_state }}"
+      template: rocky9-temp
+      esxi_hostname: "{{ item.value.esxi_hostname }}"
+      datacenter: Datacenter
+      guest_id: "rhel8_64Guest"
+      disk:
+      - size_gb: "{{ size_gb_1 }}"
+        autoselect_datastore: false
+        type: thin
+        controller_type: 'paravirtual'
+        controller_number: 0
+        unit_number: 0
+        datastore: "{{ item.value.datastore_1 }}"
+      hardware:
+        memory_mb: 8192
+        num_cpus: 4
+        num_cpu_cores_per_socket: 2
+        scsi: paravirtual
+        cpu_shares_level: "high"
+        mem_shares_level: "high"
+      networks:
+      - name: "{{ vm_net_name }}"
+        type: static
+        ip: "{{item.value.vmip}}"
+        netmask: 255.255.255.0
+        gateway: "{{item.value.vmgateway}}"
+        dns_servers:
+        - 8.8.8.8
+        - 8.8.4.4
+      customization:
+        hostname: "{{item.value.server_hostname}}"
+        dns_servers:
+        - 8.8.8.8
+        - 8.8.4.4
+      wait_for_ip_address: true
+    delegate_to: localhost
+    with_dict: "{{ myvms }}"

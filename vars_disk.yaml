@@ -1,0 +1,38 @@
+---
+vcenter_hostname: ""
+vcenter_datacenter: "Datacenter"
+vcenter_validate_certs: false
+vcenter_username: ""
+vcenter_password: ""  ## Vcenterda kullanılan parolayı giriniz ##
+vm_guestid: "rhel8_64Guest"
+vm_disk_type: "thin"
+vm_hw_scsi: "paravirtual"
+vm_name: "deneme"
+#disk_size: 20  # GB cinsinden ilk disk boyutu
+#disk1_size: 30  # GB cinsinden ikinci disk boyutu
+#disk2_size: 40  # GB cinsinden üçüncü disk boyutu
+#datastore_name: "HP2-B-SSD"
+#datastore1_name: "HP1-A"
+controller_number: 0
+unit_number: 1
+state: present
+myvms:
+  
+    deneme-master-01:
+      vm_name: "deneme-master-01"
+      datastore_name: ""
+      datastore1_name: ""
+      disk_size: 50
+      disk1_size: 20
+    deneme-worker-01:
+      vm_name: "deneme-worker-01"
+      datastore_name: ""
+      datastore1_name: ""
+      disk_size: 50
+      disk1_size: 20
+#    deneme-worker-03:
+#      vm_name: "deneme-worker-03"
+#      datastore_name: ""
+#      datastore1_name: ""
+#      disk_size: 150
+#      disk1_size: 20

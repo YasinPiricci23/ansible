@@ -1,0 +1,5 @@
+---
+- import_playbook: provider-multiple-vm.yaml
+- import_playbook: disk-add.yaml
+- import_playbook: prepare_k8s.yaml
+- import_playbook: kubeadm_install.yaml
