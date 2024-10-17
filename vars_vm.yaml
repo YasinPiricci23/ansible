@@ -1,55 +1,48 @@
 ---
-vcenter_hostname: "vcenteHostname"
-vcenter_datacenter: "Datacenter"
+vcenter_hostname: "*" ## vcenter hostname adı girilmesi gerekiyor  *
+vcenter_datacenter: "*"  ## vcentera ait datacenter name girilmesi gerekiyor. *
 vcenter_validate_certs: false
-vcenter_username: "vcenterUsername"
-vcenter_password: "vcenterPassword"  ## Vcenterda kullanılan parolayı giriniz ##
-#esxi_hostname: ""
-vm_guestid: "rhel8_64Guest"
+vcenter_username: "*" ## vcenterda kullanılan kullanıcı adı giriniz. *
+vcenter_password: "*"  ## Vcenterda kullanılan parolayı giriniz ## *
+vm_guestid: "rhel8_64Guest" # rocky linux 8 versiyonu için ekliyoruz *
 vm_disk_type: "thin"
 vm_hw_scsi: "paravirtual"
-vm_net_name: "vlan id"
+vm_net_name: "vlan id" *
 vm_state: "present"
 size_gb_1: 64
-#size_gb_2: 15
-#size_gb_3: 20
 myvms:
-    deneme-master-01:
-      esxi_hostname: "esxiHostname"      
-      vmip: 
-      vmgateway: 
-      server_hostname: deneme-master-01
-      datastore_1: datastore
+    master-01:
+      esxi_hostname: "esxiHostname"  *    
+      vmip: 10.0.1.1 # *
+      vmgateway: 10.0.1.254 # *
+      server_hostname: master-01 # *
+      datastore_1: datastore_name # *
       vm_state: present
-#      datastore_2: HP1-A
-#      datastore_3: HP2-B-SSD
 
     
-    deneme-worker-01:
-      esxi_hostname: "172.16.0.102"      
-      vmip: 10.0.61.11
-      vmgateway: 10.0.61.254
-      server_hostname: deneme-worker-01
-      datastore_1: HP2-B
+    worker-01:
+      esxi_hostname: "esxiHostname"  # *    
+      vmip: 10.0.1.11 # *
+      vmgateway: 10.0.1.254 # *
+      server_hostname: worker-01 # *
+      datastore_1: datastore_name # *
       vm_state: present
-#      datastore_2: HP2-A
-#      datastore_3: HP2-B-SSD
 
 
 
-#    deneme-worker-02:
-#      esxi_hostname: ""      
-#      vmip: 
-#      vmgateway: 
-#      server_hostname: deneme-worker-02
-#      datastore_1: HP2-A
+#    worker-02:
+#      esxi_hostname: "esxiHostname"      
+#      vmip: 10.0.1.12
+#      vmgateway: 10.0.1.254
+#      server_hostname: worker-02
+#      datastore_1: datastore_name
 #      vm_state: present
 #
 #
-#    deneme-worker-03:
-#      esxi_hostname: ""      
-#      vmip: 
-#      vmgateway: 
-#      server_hostname: deneme-worker-03
-#      datastore_1: HP2-B
+#    worker-03:
+#      esxi_hostname: "esxiHostname"      
+#      vmip: 10.0.1.13
+#      vmgateway: 10.0.1.254
+#      server_hostname: worker-03
+#      datastore_1: datastore_name
 #      vm_state: present

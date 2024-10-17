@@ -1,13 +1,13 @@
 ---
-vcenter_hostname: ""
-vcenter_datacenter: "Datacenter"
+vcenter_hostname: "*"  ## vcenter hostname adı girilmesi gerekiyor
+vcenter_datacenter: "" ## vcentera ait datacenter name girilmesi gerekiyor.
 vcenter_validate_certs: false
-vcenter_username: ""
+vcenter_username: ""  ## vcenterda kullanılan kullanıcı adı giriniz. ##
 vcenter_password: ""  ## Vcenterda kullanılan parolayı giriniz ##
-vm_guestid: "rhel8_64Guest"
+vm_guestid: "rhel8_64Guest" # rocky linux 8 versiyonu için ekliyoruz
 vm_disk_type: "thin"
 vm_hw_scsi: "paravirtual"
-vm_name: "deneme"
+vm_name: ""  # sanal makinenin ismini giriniz. ##
 #disk_size: 20  # GB cinsinden ilk disk boyutu
 #disk1_size: 30  # GB cinsinden ikinci disk boyutu
 #disk2_size: 40  # GB cinsinden üçüncü disk boyutu
@@ -18,20 +18,20 @@ unit_number: 1
 state: present
 myvms:
   
-    deneme-master-01:
-      vm_name: "deneme-master-01"
+    master-01:
+      vm_name: "master-01"
+      datastore_name: ""  # disk için kullanılması istenen datastore ismi
+      datastore1_name: "" # disk için kullanılması istenen datastore ismi
+      disk_size: 50
+      disk1_size: 20
+    worker-01:
+      vm_name: "worker-01"
       datastore_name: ""
       datastore1_name: ""
       disk_size: 50
       disk1_size: 20
-    deneme-worker-01:
-      vm_name: "deneme-worker-01"
-      datastore_name: ""
-      datastore1_name: ""
-      disk_size: 50
-      disk1_size: 20
-#    deneme-worker-03:
-#      vm_name: "deneme-worker-03"
+#    worker-03:
+#      vm_name: "worker-03"
 #      datastore_name: ""
 #      datastore1_name: ""
 #      disk_size: 150
